@@ -1,0 +1,15 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: setup-harvester-cluster
+  namespace: fleet-local
+spec:
+  branch: main
+  insecureSkipTLSVerify: false
+  paths:
+    - "/vm-network"
+    - "/opensuse-image"
+  repo: https://github.com/ibrokethecloud/harvester-fleet-demo
+  targetNamespace: default
+  targets:
+    - clusterSelector: {}
