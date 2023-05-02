@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Secret
+type: secret
+metadata:
+  labels:
+    harvesterhci.io/cloud-init-template: harvester
+  name: opensuse-vm-cloud-init
+  namespace: default
+stringData:
+  networkdata: ""
+  userdata: |
+    #cloud-config
+    package_update: true
+    packages:
+      - qemu-guest-agent
+    password: atomic
+    ssh_pwauth: True
+    chpasswd: {expire: False}
+    runcmd:
+      - - systemctl
+        - enable
+        - --now
+        - qemu-guest-agent.service
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    harvesterhci.io/imageId: default/opensuse-default-image
+    harvesterhci.io/owned-by: '[{"schema":"kubevirt.io.virtualmachine","refs":["default/opensuse-vm"]}]'
+    pv.kubernetes.io/bind-completed: "yes"
+    pv.kubernetes.io/bound-by-controller: "yes"
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+  name: opensuse-vm-disk-0
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: longhorn-opensuse-default-image
+  volumeMode: Block
+  volumeName: opensuse-vm-disk-0-pv
+---
+type: kubevirt.io.virtualmachine
+metadata:
+  namespace: default
+  annotations:
+  labels:
+    harvesterhci.io/creator: harvester
+    harvesterhci.io/os: openSUSE
+  name: opensuse-vm
+spec:
+  runStrategy: RerunOnFailure
+  template:
+    metadata:
+      annotations:
+        harvesterhci.io/sshNames: '["default/vm-workload-keys"]'
+      labels:
+        harvesterhci.io/vmName: opensuse-vm
+    spec:
+      domain:
+        machine:
+          type: ""
+        cpu:
+          cores: 2
+          sockets: 1
+          threads: 1
+        devices:
+          inputs:
+            - bus: usb
+              name: tablet
+              type: tablet
+          interfaces:
+            - bridge: {}
+              model: virtio
+              name: default
+          disks:
+            - name: disk-0
+              disk:
+                bus: virtio
+              bootOrder: 1
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          hostDevices: []
+        resources:
+          limits:
+            memory: 4Gi
+            cpu: "2"
+        features:
+          acpi:
+            enabled: true
+      evictionStrategy: LiveMigrate
+      hostname: opensuse-vm
+      networks:
+        - name: default
+          multus:
+            networkName: default/workload
+      volumes:
+        - name: disk-0
+          persistentVolumeClaim:
+            claimName: opensuse-vm-disk-0
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            secretRef:
+              name: opensuse-vm-cloud-init
+            networkDataSecretRef:
+              name: opensuse-vm-cloud-init
+      affinity: {}

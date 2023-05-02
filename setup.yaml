@@ -9,6 +9,7 @@ spec:
   paths:
     - "/vm-network"
     - "/vm-image"
+    - "/keypair"
   repo: https://github.com/ibrokethecloud/harvester-fleet-demo
   targetNamespace: default
   targets:
