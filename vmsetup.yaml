@@ -1,0 +1,14 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: opensuse-vm-workloads
+  namespace: fleet-local
+spec:
+  branch: main
+  insecureSkipTLSVerify: false
+  paths:
+    - "/vm-workload"
+  repo: https://github.com/ibrokethecloud/harvester-fleet-demo
+  targetNamespace: default
+  targets:
+    - clusterSelector: {}

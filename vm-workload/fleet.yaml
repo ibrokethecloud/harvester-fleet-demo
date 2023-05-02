@@ -1,0 +1,3 @@
+dependsOn:
+  - name: setup-harvester-cluster-vm-image
+  - name: setup-harvester-cluster-vm-network
