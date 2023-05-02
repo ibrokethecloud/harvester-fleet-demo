@@ -8,7 +8,7 @@ spec:
   insecureSkipTLSVerify: false
   paths:
     - "/vm-network"
-    - "/opensuse-image"
+    - "/vm-image"
   repo: https://github.com/ibrokethecloud/harvester-fleet-demo
   targetNamespace: default
   targets:
